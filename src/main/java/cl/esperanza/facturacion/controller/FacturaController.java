@@ -14,7 +14,7 @@ import cl.esperanza.facturacion.dto.CreateFacturaRequest;
 import cl.esperanza.facturacion.dto.CreateGastoRequest;
 
 @RestController
-@RequestMapping("/api/v1/facturacion") // Cambiado a /facturacion para hacer juego con tu Spring
+@RequestMapping("/api/v1/facturacion")
 public class FacturaController {
 
     private final FacturaService facturaService;
