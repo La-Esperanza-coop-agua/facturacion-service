@@ -20,7 +20,6 @@ public record CreateGastoRequest(
         
         SimpleDateFormat formateador = new SimpleDateFormat("yyyy-MM-dd");
         gasto.setFechaGasto(formateador.format(new Date()));
-        
         return gasto;
     }
 }
