@@ -50,4 +50,15 @@ public class FacturaController {
     public ResponseEntity<List<GastoOperacional>> obtenerGastos() {
         return ResponseEntity.ok(facturaService.obtenerTodosLosGastos());
     }
+
+    @PutMapping("/{id}/pagar")
+    public ResponseEntity<Factura> pagarFactura(@PathVariable Integer id) {
+        Factura facturaPagada = facturaService.cambiarEstadoAPagada(id);
+        return ResponseEntity.ok(facturaPagada);
+    }
+
+    @GetMapping("/gasto/total-monto")
+        public ResponseEntity<Integer> getTotalGastosOperacionales() {
+        return ResponseEntity.ok(facturaService.obtenerTotalGastos());
+    }
 }

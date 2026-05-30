@@ -55,6 +55,8 @@ public class FacturaService {
         return factura;
     }
 
+    
+
     public GastoOperacional registrarGasto(GastoOperacional gasto) {
         return gastoRepo.save(gasto);
     }
@@ -65,5 +67,16 @@ public class FacturaService {
 
     public List<GastoOperacional> obtenerTodosLosGastos() {
         return gastoRepo.findAll();
+    }
+
+    public Factura cambiarEstadoAPagada(Integer id) {
+        Factura factura = facturaRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("No se encontró la factura con ID: " + id));
+        factura.setEstado("PAGADA");
+        return facturaRepo.save(factura);
+    }
+
+    public int obtenerTotalGastos() {
+        return gastoRepo.sumTotalGastos();
     }
 }
