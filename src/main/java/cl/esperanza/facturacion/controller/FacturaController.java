@@ -1,31 +1,55 @@
 package cl.esperanza.facturacion.controller;
 
-import jakarta.validation.Valid;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.List; 
-
+import cl.esperanza.facturacion.dto.ConsumoRequest;
+import cl.esperanza.facturacion.dto.CreateFacturaRequest;
+import cl.esperanza.facturacion.dto.CreateGastoRequest;
 import cl.esperanza.facturacion.model.Factura;
 import cl.esperanza.facturacion.model.GastoOperacional;
 import cl.esperanza.facturacion.service.FacturaService;
-import cl.esperanza.facturacion.dto.CreateFacturaRequest;
-import cl.esperanza.facturacion.dto.CreateGastoRequest;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/facturacion")
 public class FacturaController {
 
     private final FacturaService facturaService;
+    private final WebClient consumoWebClient;
 
-    public FacturaController(FacturaService facturaService) {
+    public FacturaController(FacturaService facturaService, WebClient consumoWebClient) {
         this.facturaService = facturaService;
+        this.consumoWebClient = consumoWebClient;
     }
 
     @PostMapping("/generar")
     public ResponseEntity<Factura> generarNuevaFactura(@Valid @RequestBody CreateFacturaRequest request) {
-        Factura nuevaFactura = facturaService.generarFactura(request.toEntity());
+        Factura facturaEntity = request.toEntity();
+
+        try {
+            ConsumoRequest lectura = consumoWebClient.get()
+                .uri("/socio/{run}/periodo/{periodo}", request.runSocio(), request.periodo())
+                .retrieve()
+                .bodyToMono(ConsumoRequest.class)
+                .block();
+            if (lectura != null) {
+                facturaEntity.setMetrosCubicosFacturados(lectura.metrosCubicosConsumidos());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo obtener la lectura del socio en este periodo");
+        }
+        Factura nuevaFactura = facturaService.generarFactura(facturaEntity);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaFactura);
     }
 
