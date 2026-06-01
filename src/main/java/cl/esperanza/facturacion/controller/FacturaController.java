@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import cl.esperanza.facturacion.dto.ConsumoRequest;
 import cl.esperanza.facturacion.dto.CreateFacturaRequest;
 import cl.esperanza.facturacion.dto.CreateGastoRequest;
+import cl.esperanza.facturacion.dto.SocioResponse;
 import cl.esperanza.facturacion.model.Factura;
 import cl.esperanza.facturacion.model.GastoOperacional;
 import cl.esperanza.facturacion.service.FacturaService;
@@ -27,12 +28,14 @@ public class FacturaController {
 
     private final FacturaService facturaService;
     private final WebClient consumoWebClient;
+    private final WebClient sociosWebClient;
 
-    public FacturaController(FacturaService facturaService, WebClient consumoWebClient) {
+    public FacturaController(FacturaService facturaService, WebClient consumoWebClient, WebClient sociosWebClient) {
         this.facturaService = facturaService;
         this.consumoWebClient = consumoWebClient;
+        this.sociosWebClient = sociosWebClient;
     }
-
+    /* 
     @PostMapping("/generar")
     public ResponseEntity<Factura> generarNuevaFactura(@Valid @RequestBody CreateFacturaRequest request) {
         Factura facturaEntity = request.toEntity();
@@ -52,7 +55,7 @@ public class FacturaController {
         Factura nuevaFactura = facturaService.generarFactura(facturaEntity);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaFactura);
     }
-
+    */
     @PutMapping("/{id}/revisar-vencimiento")
     public ResponseEntity<Factura> revisarVencimiento(@PathVariable Integer id) {
         Factura facturaActualizada = facturaService.aplicarInteresPorVencimiento(id);
@@ -61,15 +64,27 @@ public class FacturaController {
 
     @GetMapping("/socio/{run}")
     public ResponseEntity<List<Factura>> getFacturasPorSocio(@PathVariable String run) {
-        return ResponseEntity.ok(facturaService.obtenerPorSocio(run));
+        try {
+            sociosWebClient.get()
+                .uri("/{runSocio}", run.trim().toUpperCase())
+                .retrieve()
+                .bodyToMono(SocioResponse.class)
+                .block();
+        } catch (Exception e) {
+            throw new RuntimeException("El socio con RUN "+ run +" no existe en el sistema...");
+        }
+
+        List<Factura> facturas = facturaService.obtenerPorSocio(run);
+        return ResponseEntity.ok(facturas);
     }
 
+    /* 
     @PostMapping("/gasto")
     public ResponseEntity<GastoOperacional> registrarGastoOperacional(@Valid @RequestBody CreateGastoRequest request) {
         GastoOperacional nuevoGasto = facturaService.registrarGasto(request.toEntity());
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoGasto);
     }
-
+    */
     @GetMapping("/gasto/todos")
     public ResponseEntity<List<GastoOperacional>> obtenerGastos() {
         return ResponseEntity.ok(facturaService.obtenerTodosLosGastos());
