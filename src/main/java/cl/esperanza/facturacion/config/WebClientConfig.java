@@ -9,15 +9,11 @@ public class WebClientConfig {
 
     @Bean
     public WebClient sociosWebClient() {
-        return WebClient.builder()
-                .baseUrl("http://localhost:8082/api/v1/socios")
-                .build();
+        return WebClient.builder().baseUrl("http://localhost:8082/api/v1/socios").build();
     }
 
     @Bean
     public WebClient consumoWebClient(){
-        return WebClient.builder()
-                .baseUrl("http://localhost:8071/api/v1/lectura")
-                .build();
+        return WebClient.builder().baseUrl("http://localhost:8085/api/v1/lectura").build();
     }
 }

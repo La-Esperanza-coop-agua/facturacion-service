@@ -12,11 +12,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ResponseStatusException;
 
 import cl.esperanza.facturacion.dto.ConsumoRequest;
 import cl.esperanza.facturacion.dto.CreateFacturaRequest;
 import cl.esperanza.facturacion.dto.CreateGastoRequest;
 import cl.esperanza.facturacion.dto.SocioResponse;
+import cl.esperanza.facturacion.mapper.FacturaMapper;
 import cl.esperanza.facturacion.model.Factura;
 import cl.esperanza.facturacion.model.GastoOperacional;
 import cl.esperanza.facturacion.service.FacturaService;
@@ -35,27 +37,28 @@ public class FacturaController {
         this.consumoWebClient = consumoWebClient;
         this.sociosWebClient = sociosWebClient;
     }
-    /* 
+    
     @PostMapping("/generar")
     public ResponseEntity<Factura> generarNuevaFactura(@Valid @RequestBody CreateFacturaRequest request) {
-        Factura facturaEntity = request.toEntity();
+        Factura facturaModel = FacturaMapper.toModel(request);
 
         try {
-            ConsumoRequest lectura = consumoWebClient.get()
-                .uri("/socio/{run}/periodo/{periodo}", request.runSocio(), request.periodo())
+            ConsumoRequest ultimaLectura = consumoWebClient.get()
+                .uri("/socio/{runSocio}/ultima", request.runSocio())
                 .retrieve()
                 .bodyToMono(ConsumoRequest.class)
                 .block();
-            if (lectura != null) {
-                facturaEntity.setMetrosCubicosFacturados(lectura.metrosCubicosConsumidos());
+            if (ultimaLectura != null) {
+                facturaModel.setMetrosCubicosFacturados(ultimaLectura.consumoMensual());
             }
         } catch (Exception e) {
             throw new RuntimeException("No se pudo obtener la lectura del socio en este periodo");
         }
-        Factura nuevaFactura = facturaService.generarFactura(facturaEntity);
+
+        Factura nuevaFactura = facturaService.generarFactura(facturaModel);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaFactura);
     }
-    */
+    
     @PutMapping("/{id}/revisar-vencimiento")
     public ResponseEntity<Factura> revisarVencimiento(@PathVariable Integer id) {
         Factura facturaActualizada = facturaService.aplicarInteresPorVencimiento(id);
@@ -66,7 +69,7 @@ public class FacturaController {
     public ResponseEntity<List<Factura>> getFacturasPorSocio(@PathVariable String run) {
         try {
             sociosWebClient.get()
-                .uri("/{runSocio}", run.trim().toUpperCase())
+                .uri("/run/{runSocio}", run.trim().toUpperCase())
                 .retrieve()
                 .bodyToMono(SocioResponse.class)
                 .block();
