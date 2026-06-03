@@ -1,29 +1,29 @@
 package cl.esperanza.facturacion.service;
 
-import org.springframework.stereotype.Service;
-import cl.esperanza.facturacion.model.Factura;
-import cl.esperanza.facturacion.model.GastoOperacional;
-import cl.esperanza.facturacion.repository.FacturaRepository;
-import cl.esperanza.facturacion.repository.GastoOperacionalRepository;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cl.esperanza.facturacion.model.Factura;
+import cl.esperanza.facturacion.model.GastoOperacional;
+import cl.esperanza.facturacion.repository.FacturaRepository;
+import cl.esperanza.facturacion.repository.GastoOperacionalRepository;
+import jakarta.transaction.Transactional;
+
 @Service
+@Transactional
 public class FacturaService {
 
-    private final FacturaRepository facturaRepo;
-    private final GastoOperacionalRepository gastoRepo;
+    @Autowired
+    private FacturaRepository facturaRepo;
+    private GastoOperacionalRepository gastoRepo;
 
     private final int VALOR_METRO_CUBICO = 500; 
     private final int CARGO_FIJO = 3000;         
     private final int INTERES_MULTA_ATRASO = 1500; 
-
-    public FacturaService(FacturaRepository facturaRepo, GastoOperacionalRepository gastoRepo) {
-        this.facturaRepo = facturaRepo;
-        this.gastoRepo = gastoRepo;
-    }
 
     public Factura generarFactura(Factura factura) {
         int subtotal = (int) (factura.getMetrosCubicosFacturados() * VALOR_METRO_CUBICO);
