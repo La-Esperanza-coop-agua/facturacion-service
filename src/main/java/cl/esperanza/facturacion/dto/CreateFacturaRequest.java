@@ -1,30 +1,18 @@
 package cl.esperanza.facturacion.dto;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import cl.esperanza.facturacion.model.Factura;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
 
 public record CreateFacturaRequest(
-    @NotBlank(message = "El RUN del socio es obligatorio")
-    String runSocio,
-
-    @NotBlank(message = "El periodo es obligatorio (Ej: 2026-05)")
-    String periodo
+    @NotBlank(message = "El RUN del socio es obligatorio")String runSocio,
+    @NotBlank(message = "El periodo es obligatorio (Ej: 2026-05)") String periodo,
+    @PositiveOrZero(message = "Metros cubicos no puede estar vacio") double metrosCubicosFacturados,
+    @PositiveOrZero(message = "SubTotalConsumo no puede estar vacio") int subtotalConsumo,
+    @PositiveOrZero(message = "cargoFijo no puede estar vacio") int cargoFijo,
+    @PositiveOrZero(message = "interesPorAtraso no puede estar vacio") int interesPorAtraso,
+    @PositiveOrZero(message = "montoTotal no puede estar vacio") int montoTotal,
+    @NotBlank(message = "fechaEmision no puede estar vacio") String fechaEmision,
+    @NotBlank(message = "fechaVencimiento no puede estar vacio") String fechaVencimiento,
+    @NotBlank(message = "estado no puede estar vacio") String estado
 ) {
-    public Factura toEntity() {
-        Factura factura = new Factura();
-        factura.setRunSocio(this.runSocio());
-        factura.setPeriodo(this.periodo());
-        
-        SimpleDateFormat formateador = new SimpleDateFormat("yyyy-MM-dd");
-        String hoy = formateador.format(new Date());
-        
-        factura.setFechaEmision(hoy);
-        factura.setFechaVencimiento(this.periodo() + "-15");
-        factura.setInteresPorAtraso(0); 
-        factura.setEstado("EMITIDA");
-        return factura;
-    }
 }
