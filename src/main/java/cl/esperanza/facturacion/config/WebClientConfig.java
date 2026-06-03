@@ -8,16 +8,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class WebClientConfig {
 
     @Bean
-    public WebClient sociosWebClient() {
-        return WebClient.builder()
-                .baseUrl("http://localhost:8082/api/v1/socios")
-                .build();
+    public WebClient sociosWebClient(WebClient.Builder builder) {
+        return builder.baseUrl("http://localhost:8082/api/v1/socios").build();
     }
 
     @Bean
-    public WebClient consumoWebClient(){
-        return WebClient.builder()
-                .baseUrl("http://localhost:8071/api/v1/lectura")
-                .build();
+    public WebClient consumoWebClient(WebClient.Builder builder){
+        return builder.baseUrl("http://localhost:8085/api/v1/lectura").build();
     }
 }
