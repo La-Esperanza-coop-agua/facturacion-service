@@ -14,6 +14,6 @@ public class WebClientConfig {
 
     @Bean
     public WebClient consumoWebClient(){
-        return WebClient.builder().baseUrl("http://localhost:8071/api/v1/lectura").build();
+        return WebClient.builder().baseUrl("http://localhost:8085/api/v1/lectura").build();
     }
 }
