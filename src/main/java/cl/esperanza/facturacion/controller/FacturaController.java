@@ -16,7 +16,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import cl.esperanza.facturacion.dto.ConsumoRequest;
 import cl.esperanza.facturacion.dto.CreateFacturaRequest;
-import cl.esperanza.facturacion.dto.CreateGastoRequest;
 import cl.esperanza.facturacion.dto.SocioResponse;
 import cl.esperanza.facturacion.mapper.FacturaMapper;
 import cl.esperanza.facturacion.model.Factura;
@@ -40,21 +39,38 @@ public class FacturaController {
     
     @PostMapping("/generar")
     public ResponseEntity<Factura> generarNuevaFactura(@Valid @RequestBody CreateFacturaRequest request) {
+        Boolean existeSocio = false;
+        
+        try {
+            existeSocio = sociosWebClient.get()
+                .uri("/existe/{run}", request.runSocio())
+                .retrieve()
+                .bodyToMono(Boolean.class)
+                .block();
+        } catch (Exception e) {
+            throw new RuntimeException("Error de conexion con el microservicio 'Socios'");
+        }
+        // si el boolean existeSocio es false se corta el proceso
+        if (Boolean.FALSE.equals(existeSocio)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se puede generar la factura: El socio con RUN " + request.runSocio() + " no existe.");
+        }
+
         Factura facturaModel = FacturaMapper.toModel(request);
 
         try {
             ConsumoRequest ultimaLectura = consumoWebClient.get()
-                .uri("/socio/{runSocio}/ultima", request.runSocio())
+                .uri("/socio/{runSocio/ultima", request.runSocio())
                 .retrieve()
                 .bodyToMono(ConsumoRequest.class)
                 .block();
-            if (ultimaLectura != null) {
+            
+            if (ultimaLectura != null){
                 facturaModel.setMetrosCubicosFacturados(ultimaLectura.consumoMensual());
             }
         } catch (Exception e) {
             throw new RuntimeException("No se pudo obtener la lectura del socio en este periodo");
         }
-
+        
         Factura nuevaFactura = facturaService.generarFactura(facturaModel);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaFactura);
     }
