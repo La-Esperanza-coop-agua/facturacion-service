@@ -50,6 +50,7 @@ public class FacturaController {
         } catch (Exception e) {
             throw new RuntimeException("Error de conexion con el microservicio 'Socios'");
         }
+        
         // si el boolean existeSocio es false se corta el proceso
         if (Boolean.FALSE.equals(existeSocio)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se puede generar la factura: El socio con RUN " + request.runSocio() + " no existe.");
@@ -57,7 +58,7 @@ public class FacturaController {
 
         Factura facturaModel = FacturaMapper.toModel(request);
 
-try {
+        try {
             ConsumoRequest ultimaLectura = consumoWebClient.get()
                 .uri("http://localhost:8085/api/v1/lecturas/socio/{runSocio}/ultima", request.runSocio())
                 .retrieve()
@@ -69,12 +70,10 @@ try {
             }
         } catch (org.springframework.web.reactive.function.client.WebClientResponseException.NotFound e) {
             throw new org.springframework.web.server.ResponseStatusException(
-                HttpStatus.NOT_FOUND, "El socio existe, pero no registra lecturas de consumo para este periodo."
-            );
+                HttpStatus.NOT_FOUND, "El socio existe, pero no registra lecturas de consumo para este periodo.");
         } catch (Exception e) {
             throw new org.springframework.web.server.ResponseStatusException(
-                HttpStatus.SERVICE_UNAVAILABLE, "No se pudo obtener la lectura del socio (Servicio de Lecturas no disponible)"
-            );
+                HttpStatus.SERVICE_UNAVAILABLE, "No se pudo obtener la lectura del socio (Servicio de Lecturas no disponible)");
         }
         
         Factura nuevaFactura = facturaService.generarFactura(facturaModel);
@@ -124,5 +123,11 @@ try {
     @GetMapping("/gasto/total-monto")
         public ResponseEntity<Integer> getTotalGastosOperacionales() {
         return ResponseEntity.ok(facturaService.obtenerTotalGastos());
+    }
+
+    @GetMapping("/periodo/{periodo}/total-consumo")
+    public ResponseEntity<Double> getTotalConsumoPorPeriodo(@PathVariable String periodo) {
+        Double totalAgua = facturaService.obtenerTotalAguaFacturadaPorPeriodo(periodo);
+        return ResponseEntity.ok(totalAgua);
     }
 }

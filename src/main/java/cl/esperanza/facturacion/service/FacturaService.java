@@ -55,7 +55,9 @@ public class FacturaService {
         return factura;
     }
 
-    
+    public Double obtenerTotalAguaFacturadaPorPeriodo(String periodo) {
+        return facturaRepo.sumarMetrosCubicosPorPeriodo(periodo);
+    }
 
     public GastoOperacional registrarGasto(GastoOperacional gasto) {
         return gastoRepo.save(gasto);
