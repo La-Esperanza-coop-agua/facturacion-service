@@ -57,7 +57,7 @@ public class FacturaController {
 
         Factura facturaModel = FacturaMapper.toModel(request);
 
-        try {
+try {
             ConsumoRequest ultimaLectura = consumoWebClient.get()
                 .uri("http://localhost:8085/api/v1/lecturas/socio/{runSocio}/ultima", request.runSocio())
                 .retrieve()
@@ -67,8 +67,14 @@ public class FacturaController {
             if (ultimaLectura != null){
                 facturaModel.setMetrosCubicosFacturados(ultimaLectura.consumoMensual());
             }
+        } catch (org.springframework.web.reactive.function.client.WebClientResponseException.NotFound e) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                HttpStatus.NOT_FOUND, "El socio existe, pero no registra lecturas de consumo para este periodo."
+            );
         } catch (Exception e) {
-            throw new RuntimeException("No se pudo obtener la lectura del socio en este periodo");
+            throw new org.springframework.web.server.ResponseStatusException(
+                HttpStatus.SERVICE_UNAVAILABLE, "No se pudo obtener la lectura del socio (Servicio de Lecturas no disponible)"
+            );
         }
         
         Factura nuevaFactura = facturaService.generarFactura(facturaModel);
