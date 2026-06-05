@@ -40,10 +40,10 @@ public class FacturaController {
     @PostMapping("/generar")
     public ResponseEntity<Factura> generarNuevaFactura(@Valid @RequestBody CreateFacturaRequest request) {
         Boolean existeSocio = false;
-        
+
         try {
             existeSocio = sociosWebClient.get()
-                .uri("/existe/{run}", request.runSocio())
+                .uri("http://localhost:8082/api/v1/socios/existe/{run}", request.runSocio())
                 .retrieve()
                 .bodyToMono(Boolean.class)
                 .block();
@@ -59,7 +59,7 @@ public class FacturaController {
 
         try {
             ConsumoRequest ultimaLectura = consumoWebClient.get()
-                .uri("/socio/{runSocio/ultima", request.runSocio())
+                .uri("http://localhost:8085/api/v1/lecturas/socio/{runSocio}/ultima", request.runSocio())
                 .retrieve()
                 .bodyToMono(ConsumoRequest.class)
                 .block();
