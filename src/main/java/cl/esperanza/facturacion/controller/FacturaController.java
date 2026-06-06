@@ -102,13 +102,6 @@ public class FacturaController {
         return ResponseEntity.ok(facturas);
     }
 
-    /* 
-    @PostMapping("/gasto")
-    public ResponseEntity<GastoOperacional> registrarGastoOperacional(@Valid @RequestBody CreateGastoRequest request) {
-        GastoOperacional nuevoGasto = facturaService.registrarGasto(request.toEntity());
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoGasto);
-    }
-    */
     @GetMapping("/gasto/todos")
     public ResponseEntity<List<GastoOperacional>> obtenerGastos() {
         return ResponseEntity.ok(facturaService.obtenerTodosLosGastos());
