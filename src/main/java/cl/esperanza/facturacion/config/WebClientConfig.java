@@ -14,7 +14,7 @@ public class WebClientConfig {
     }
 
     @Bean
-    public WebClient consumoWebClient(@Value("${consumo.service.url:http://localhost:8085/api/v1/lectura}") String lecturaServiceUrl){
+    public WebClient consumoWebClient(@Value("${lectura.service.url:http://localhost:8085/api/v1/lectura}") String lecturaServiceUrl){
         return WebClient.builder().baseUrl(lecturaServiceUrl).build();
     }
 }
