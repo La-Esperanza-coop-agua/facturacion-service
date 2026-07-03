@@ -1,8 +1,12 @@
 package cl.esperanza.facturacion.dto;
 
+import java.time.LocalDate;
+
 public record ConsumoRequest( 
+    Integer id,
     String runSocio,
-    String fechaLectura,
+    LocalDate fechaLectura,
     double medidaActual,
-    double consumoMensual){
-}
+    double consumoMensual,
+    String periodo
+){}

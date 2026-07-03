@@ -19,6 +19,8 @@ public class FacturaService {
 
     @Autowired
     private FacturaRepository facturaRepo;
+    
+    @Autowired
     private GastoOperacionalRepository gastoRepo;
 
     private final int VALOR_METRO_CUBICO = 500; 

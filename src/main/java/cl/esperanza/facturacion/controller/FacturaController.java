@@ -101,6 +101,15 @@ public class FacturaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaFactura);
     }
     
+    @Operation(summary = "Registrar un nuevo gasto operacional", description = "Guarda un nuevo gasto en el sistema (ej: mantenimiento, electricidad, etc.)")
+    @ApiResponse(responseCode = "201", description = "Gasto registrado exitosamente")
+    @PostMapping("/gasto")
+    public ResponseEntity<GastoOperacional> registrarNuevoGasto(
+        @org.springframework.web.bind.annotation.RequestBody GastoOperacional gasto) {
+        
+        GastoOperacional nuevoGasto = facturaService.registrarGasto(gasto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoGasto);
+    }
     @Operation(summary = "Aplicar interés por vencimiento", description = "Aplica recargos a una factura específica que ha superado su fecha de pago")
     @ApiResponse(responseCode = "200", description = "Interés aplicado correctamente")
     @PutMapping("/{id}/revisar-vencimiento")
@@ -111,20 +120,27 @@ public class FacturaController {
 
     @Operation(summary = "Historial de facturas por socio", description = "Obtiene todas las facturas asociadas al RUN de un socio")
     @ApiResponse(responseCode = "200", description = "Lista de facturas retornada")
-    @GetMapping("/socio/{run}")
-    public ResponseEntity<List<Factura>> getFacturasPorSocio(@PathVariable String run) {
-        try {
-            sociosWebClient.get()
-                .uri("/run/{runSocio}", run.trim().toUpperCase())
-                .retrieve().bodyToMono(SocioResponse.class).block();
-        } catch (Exception e) {
-            throw new RuntimeException("El socio con RUN "+ run +" no existe en el sistema...");
-        }
+@GetMapping("/socio/{run}")
+public ResponseEntity<List<Factura>> getFacturasPorSocio(@PathVariable String run) {
+    Boolean existeSocio = false;
 
-        List<Factura> facturas = facturaService.obtenerPorSocio(run);
-        return ResponseEntity.ok(facturas);
+    try {
+        existeSocio = sociosWebClient.get()
+            .uri("http://localhost:8082/api/v1/socios/existe/{run}", run.trim())
+            .retrieve()
+            .bodyToMono(Boolean.class)
+            .block();
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
+    if (Boolean.TRUE.equals(existeSocio)) {
+        List<Factura> facturas = facturaService.obtenerPorSocio(run);
+        return ResponseEntity.ok(facturas);
+    } else {
+        return ResponseEntity.notFound().build();
+    }
+}
     @Operation(summary = "Listar todos los gastos operacionales", description = "Devuelve el detalle de los gastos del sistema de agua potable")
     @GetMapping("/gasto/todos")
     public ResponseEntity<List<GastoOperacional>> obtenerGastos() {
