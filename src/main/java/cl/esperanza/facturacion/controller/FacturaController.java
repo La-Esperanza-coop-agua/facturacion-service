@@ -120,27 +120,28 @@ public class FacturaController {
 
     @Operation(summary = "Historial de facturas por socio", description = "Obtiene todas las facturas asociadas al RUN de un socio")
     @ApiResponse(responseCode = "200", description = "Lista de facturas retornada")
-@GetMapping("/socio/{run}")
-public ResponseEntity<List<Factura>> getFacturasPorSocio(@PathVariable String run) {
-    Boolean existeSocio = false;
+    @GetMapping("/socio/{run}")
+    public ResponseEntity<List<Factura>> getFacturasPorSocio(@PathVariable String run) {
+        Boolean existeSocio = false;
 
-    try {
-        existeSocio = sociosWebClient.get()
-            .uri("http://localhost:8082/api/v1/socios/existe/{run}", run.trim())
-            .retrieve()
-            .bodyToMono(Boolean.class)
-            .block();
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+        try {
+            existeSocio = sociosWebClient.get()
+                .uri("http://localhost:8082/api/v1/socios/existe/{run}", run.trim())
+                .retrieve()
+                .bodyToMono(Boolean.class)
+                .block();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
 
-    if (Boolean.TRUE.equals(existeSocio)) {
+        if (Boolean.TRUE.equals(existeSocio)) {
         List<Factura> facturas = facturaService.obtenerPorSocio(run);
         return ResponseEntity.ok(facturas);
-    } else {
-        return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
-}
+
     @Operation(summary = "Listar todos los gastos operacionales", description = "Devuelve el detalle de los gastos del sistema de agua potable")
     @GetMapping("/gasto/todos")
     public ResponseEntity<List<GastoOperacional>> obtenerGastos() {
